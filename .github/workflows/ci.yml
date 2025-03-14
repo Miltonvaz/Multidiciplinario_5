@@ -13,18 +13,18 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      
       - name: Checkout code
-        uses: actions/checkout@v2
-
+        uses: actions/checkout@v4
       
       - name: Set up Go
-        uses: actions/setup-go@v2
+        uses: actions/setup-go@v4
         with:
-          go-version: '1.23.5' 
-
+          go-version: '1.21.0' 
       - name: Install dependencies
         run: go mod tidy
     
+      - name: Introduce syntax error
+        run: echo "syntax error" >> main.go  
+
       - name: Build Go application
         run: go build -v .
