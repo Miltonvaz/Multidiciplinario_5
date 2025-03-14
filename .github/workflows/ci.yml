@@ -1,0 +1,31 @@
+name: Go CI Workflow
+
+on:
+  push:
+    branches:
+      - feature--001-vazquez
+  pull_request:
+    branches:
+      - develop
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      
+      - name: Set up Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: '1.23.5' 
+
+      
+      - name: Install dependencies
+        run: go mod tidy
+    
+      - name: Build Go application
+        run: go build -v .

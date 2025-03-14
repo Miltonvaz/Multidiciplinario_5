@@ -25,7 +25,8 @@ func (adapter *MQTTAdapter) HandleMessage(client mqtt.Client, msg mqtt.Message) 
 		return
 	}
 
-	if err := adapter.UseCase.Execute(sensor); err != nil {
+	_, err := adapter.UseCase.Execute(sensor)
+	if err != nil {
 		log.Printf("Error al procesar los datos: %v\n", err)
 		return
 	}
