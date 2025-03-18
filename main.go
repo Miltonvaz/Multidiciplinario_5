@@ -19,6 +19,7 @@ func main() {
 		return
 	}
 
+	
 	routes_t.RegisterRoutes(router, createController, getTemperatureByIDController, getAllController, deleteController, getAverageTemperatureController, getAverageHumidityController, getLatestMeasurementController)
 
 	_, err = adapter_m.NewMQTTAdapter(repository, serviceNotification)
