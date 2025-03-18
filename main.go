@@ -21,7 +21,6 @@ func main() {
 
 	routes_t.RegisterRoutes(router, createController, getTemperatureByIDController, getAllController, deleteController, getAverageTemperatureController, getAverageHumidityController, getLatestMeasurementController)
 
-	// Pasa tanto `repository` como `serviceNotification`
 	_, err = adapter_m.NewMQTTAdapter(repository, serviceNotification)
 	if err != nil {
 		log.Fatalf("Error initializing MQTT adapter: %v", err)
