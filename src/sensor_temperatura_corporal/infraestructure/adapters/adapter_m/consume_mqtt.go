@@ -1,0 +1,120 @@
+package adapter_m
+
+import (
+	"Multidiciplinario/src/sensor_temperatura_corporal/application/repositories"
+	"Multidiciplinario/src/sensor_temperatura_corporal/application/use_case"
+	"Multidiciplinario/src/sensor_temperatura_corporal/domain"
+	"Multidiciplinario/src/sensor_temperatura_corporal/domain/entities"
+	"encoding/json"
+	"fmt"
+	"github.com/eclipse/paho.mqtt.golang"
+	"github.com/joho/godotenv"
+	"log"
+	"os"
+)
+
+type MQTTAdapter struct {
+	UseCase *use_case.Create_BodyTemperature
+	client  mqtt.Client
+}
+
+var (
+	brokerURL string
+	clientID  string
+	username  string
+	password  string
+	topic     string
+)
+
+// Cargar variables de entorno solo una vez
+func loadEnvVariables() error {
+	if err := godotenv.Load(); err != nil {
+		return fmt.Errorf("Error loading .env file: %v", err)
+	}
+
+	brokerURL = os.Getenv("MQTT_BROKER_URL")
+	clientID = os.Getenv("MQTT_CLIENT_ID")
+	username = os.Getenv("MQTT_USERNAME")
+	password = os.Getenv("MQTT_PASSWORD")
+	topic = os.Getenv("MQTT_TOPIC")
+
+	// Verificar que todas las variables necesarias estén configuradas
+	if brokerURL == "" || clientID == "" || username == "" || password == "" || topic == "" {
+		return fmt.Errorf("Missing environment variables for MQTT connection")
+	}
+
+	return nil
+}
+
+func NewMQTTAdapter(db domain.IBodyTemperature, serviceNotification *repositories.ServiceNotification) (*MQTTAdapter, error) {
+	useCase := use_case.NewCreate_BodyTemperature(db, serviceNotification)
+
+	adapter := &MQTTAdapter{UseCase: useCase}
+
+	// Intentar la conexión con el broker MQTT
+	client, err := adapter.ConnectAndConsume()
+	if err != nil {
+		return nil, err
+	}
+
+	adapter.client = *client
+	return adapter, nil
+}
+
+// Conectar y consumir mensajes
+func (adapter *MQTTAdapter) ConnectAndConsume() (*mqtt.Client, error) {
+	// Cargar las variables de entorno solo una vez
+	if err := loadEnvVariables(); err != nil {
+		log.Printf("Error loading environment variables: %v\n", err)
+		return nil, err
+	}
+
+	// Configurar opciones de cliente MQTT
+	opts := mqtt.NewClientOptions().
+		AddBroker(brokerURL).
+		SetClientID(clientID).
+		SetUsername(username).
+		SetPassword(password).
+		SetDefaultPublishHandler(adapter.HandleMessageAdapter)
+
+	client := mqtt.NewClient(opts)
+
+	// Intentar la conexión con el broker MQTT
+	log.Printf("Attempting to connect to MQTT broker at %s\n", brokerURL)
+	if token := client.Connect(); token.Wait() && token.Error() != nil {
+		log.Printf("Failed to connect to MQTT broker: %v\n", token.Error())
+		return nil, fmt.Errorf("Error connecting to MQTT broker: %v", token.Error())
+	}
+
+	log.Printf("Connected to MQTT broker successfully!\n")
+
+	// Intentar suscribirse al topic
+	if token := client.Subscribe(topic, 0, adapter.HandleMessageAdapter); token.Wait() && token.Error() != nil {
+		log.Printf("Failed to subscribe to topic %s: %v\n", topic, token.Error())
+		return nil, fmt.Errorf("Error subscribing to topic: %v", token.Error())
+	}
+
+	log.Printf("Successfully subscribed to topic: %s\n", topic)
+	return &client, nil
+}
+
+func (adapter *MQTTAdapter) HandleMessageAdapter(client mqtt.Client, msg mqtt.Message) {
+	log.Printf("Message received on topic %s: %s\n", msg.Topic(), string(msg.Payload()))
+	adapter.HandleMessage(msg)
+}
+
+func (adapter *MQTTAdapter) HandleMessage(msg mqtt.Message) {
+	var sensor entities.BodyTemperature
+
+	if err := json.Unmarshal(msg.Payload(), &sensor); err != nil {
+		log.Printf("Error unmarshalling data: %v\n", err)
+		return
+	}
+	createdSensor, err := adapter.UseCase.Execute(sensor)
+	if err != nil {
+		log.Printf("Error saving data: %v\n", err)
+		return
+	}
+
+	log.Printf("Temperature and humidity data processed successfully: %+v\n", createdSensor)
+}
