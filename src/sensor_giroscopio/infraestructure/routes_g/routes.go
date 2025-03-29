@@ -1,6 +1,7 @@
 package routes_g
 
 import (
+	"Multidiciplinario/src/core/security"
 	"Multidiciplinario/src/sensor_giroscopio/infraestructure/controllers"
 	"github.com/gin-gonic/gin"
 )
@@ -17,10 +18,10 @@ func RegisterGyroscopeSensorRoutes(
 	api := router.Group("/api/sensor-gyroscope")
 	{
 		api.POST("/create", createController.Execute)
-		api.GET("/gyroscope/:id/:user_id", getGyroscopeSensorByIDController.Execute)
-		api.GET("/all/:user_id", getAllController.Execute)
-		api.DELETE("/delete/:id/:user_id", deleteController.Execute)
-		api.GET("/gyroscope/average/:user_id", getAverageGyroscopeSensorController.Execute)
-		api.GET("/gyroscope/latest/:user_id", getLatestMeasurementController.Execute)
+		api.GET("/gyroscope/:id/:user_id", security.JWTMiddleware(), getGyroscopeSensorByIDController.Execute)
+		api.GET("/all/:user_id", security.JWTMiddleware(), getAllController.Execute)
+		api.DELETE("/delete/:id/:user_id", security.JWTMiddleware(), deleteController.Execute)
+		api.GET("/gyroscope/average/:user_id", security.JWTMiddleware(), getAverageGyroscopeSensorController.Execute)
+		api.GET("/gyroscope/latest/:user_id", security.JWTMiddleware(), getLatestMeasurementController.Execute)
 	}
 }

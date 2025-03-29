@@ -16,7 +16,7 @@ func RegisterClientRoutes(r *gin.Engine,
 ) {
 	r.POST("/clients", createClientController.Execute)
 
-	r.GET("/clients", viewClientController.Execute)
+	r.GET("/clients", security.JWTMiddleware(), viewClientController.Execute)
 
 	r.POST("/login", loginController.Execute)
 

@@ -17,7 +17,7 @@ import (
 )
 
 func startServer(router *gin.Engine) error {
-	serverErr := router.Run(":8086")
+	serverErr := router.Run(":8089")
 	if serverErr != nil {
 		log.Printf("Error en el servidor: %v", serverErr)
 	}
@@ -28,7 +28,6 @@ func main() {
 	router := gin.Default()
 	router.Use(cors.Default())
 
-	// Inicialización de las dependencias y controladores
 	createTemperatureController, getTemperatureByIDController, getAllTemperatureController, deleteTemperatureController, getAverageTemperatureController, getLatestTemperatureMeasurementController, _, _, temperatureErr := dependencies_t.Init()
 	if temperatureErr != nil {
 		log.Fatalf("Error al inicializar las dependencias de temperatura: %v", temperatureErr)
@@ -59,7 +58,6 @@ func main() {
 		return
 	}
 
-	// Rutas para cada uno de los servicios
 	routes_t.RegisterRoutes(
 		router,
 		createTemperatureController,
@@ -110,8 +108,11 @@ func main() {
 		loginController,
 	)
 
-	// Inicia el servidor
-	if err := startServer(router); err != nil {
-		log.Fatalf("Error al iniciar el servidor: %v", err)
-	}
+	go func() {
+		if err := startServer(router); err != nil {
+			log.Fatalf("Error al iniciar el servidor: %v", err)
+		}
+	}()
+
+	select {}
 }
