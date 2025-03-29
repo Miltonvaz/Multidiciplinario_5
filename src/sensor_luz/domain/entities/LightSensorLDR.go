@@ -1,9 +1,7 @@
 package entities
 
-import "time"
-
 type LightSensorLDR struct {
-	ID        int       `json:"id"`
-	Lux       float64   `json:"lux"`
-	Timestamp time.Time `json:"timestamp"`
+	ID     int     `json:"id"`
+	UserID int     `json:"user_id"`
+	Lux    float64 `json:"luz"`
 }
