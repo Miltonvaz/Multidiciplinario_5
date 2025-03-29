@@ -14,105 +14,64 @@ import (
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"log"
+	"time"
 )
 
-func startServer(router *gin.Engine) error {
-	serverErr := router.Run(":8089")
-	if serverErr != nil {
-		log.Printf("Error en el servidor: %v", serverErr)
+func startServer() {
+	for {
+		log.Println("Iniciando servidor...")
+		router := gin.Default()
+		router.Use(cors.Default())
+
+		if err := initializeDependencies(router); err != nil {
+			log.Fatalf("Error al inicializar dependencias: %v", err)
+			return
+		}
+		go func() {
+			if err := router.Run(":8080"); err != nil {
+				log.Printf("Error en el servidor: %v", err)
+			}
+		}()
+		time.Sleep(3 * time.Minute)
+		log.Println("Reiniciando servidor...")
 	}
-	return serverErr
 }
 
-func main() {
-	router := gin.Default()
-	router.Use(cors.Default())
-
+func initializeDependencies(router *gin.Engine) error {
 	createTemperatureController, getTemperatureByIDController, getAllTemperatureController, deleteTemperatureController, getAverageTemperatureController, getLatestTemperatureMeasurementController, _, _, temperatureErr := dependencies_t.Init()
 	if temperatureErr != nil {
-		log.Fatalf("Error al inicializar las dependencias de temperatura: %v", temperatureErr)
-		return
+		return temperatureErr
 	}
 
 	createHeartRateController, getHeartRateByIDController, getAllHeartRateController, deleteHeartRateController, getAverageHeartRateController, getLatestHeartRateMeasurementController, _, _, heartRateErr := dependencies_h.Init()
 	if heartRateErr != nil {
-		log.Fatalf("Error al inicializar las dependencias de ritmo cardíaco: %v", heartRateErr)
-		return
+		return heartRateErr
 	}
 
 	createLightController, getLightByIDController, getAllLightController, deleteLightController, getAverageLightController, getLatestLightMeasurementController, _, _, _, lightErr := dependencies_l.Init()
 	if lightErr != nil {
-		log.Fatalf("Error al inicializar las dependencias de luz: %v", lightErr)
-		return
+		return lightErr
 	}
 
 	createGyroscopeController, getGyroscopeByIDController, getAllGyroscopeController, deleteGyroscopeController, getAverageGyroscopeController, getLatestGyroscopeMeasurementController, _, _, _, gyroscopeErr := dependencies_g.Init()
 	if gyroscopeErr != nil {
-		log.Fatalf("Error al inicializar las dependencias del giroscopio: %v", gyroscopeErr)
-		return
+		return gyroscopeErr
 	}
 
 	createUserController, viewUserController, editUserController, deleteUserController, viewByIdUserController, loginController, userErr := dependencies_u.Init()
 	if userErr != nil {
-		log.Fatalf("Error al inicializar las dependencias de usuario: %v", userErr)
-		return
+		return userErr
 	}
 
-	routes_t.RegisterRoutes(
-		router,
-		createTemperatureController,
-		getTemperatureByIDController,
-		getAllTemperatureController,
-		deleteTemperatureController,
-		getAverageTemperatureController,
-		getLatestTemperatureMeasurementController,
-	)
+	routes_t.RegisterRoutes(router, createTemperatureController, getTemperatureByIDController, getAllTemperatureController, deleteTemperatureController, getAverageTemperatureController, getLatestTemperatureMeasurementController)
+	routes_h.RegisterHeartRateRoutes(router, createHeartRateController, getHeartRateByIDController, getAllHeartRateController, deleteHeartRateController, getAverageHeartRateController, getLatestHeartRateMeasurementController)
+	routes_l.RegisterLightSensorRoutes(router, createLightController, getLightByIDController, getAllLightController, deleteLightController, getAverageLightController, getLatestLightMeasurementController)
+	routes_g.RegisterGyroscopeSensorRoutes(router, createGyroscopeController, getGyroscopeByIDController, getAllGyroscopeController, deleteGyroscopeController, getAverageGyroscopeController, getLatestGyroscopeMeasurementController)
+	routes_u.RegisterClientRoutes(router, createUserController, viewUserController, editUserController, deleteUserController, viewByIdUserController, loginController)
 
-	routes_h.RegisterHeartRateRoutes(
-		router,
-		createHeartRateController,
-		getHeartRateByIDController,
-		getAllHeartRateController,
-		deleteHeartRateController,
-		getAverageHeartRateController,
-		getLatestHeartRateMeasurementController,
-	)
+	return nil
+}
 
-	routes_l.RegisterLightSensorRoutes(
-		router,
-		createLightController,
-		getLightByIDController,
-		getAllLightController,
-		deleteLightController,
-		getAverageLightController,
-		getLatestLightMeasurementController,
-	)
-
-	routes_g.RegisterGyroscopeSensorRoutes(
-		router,
-		createGyroscopeController,
-		getGyroscopeByIDController,
-		getAllGyroscopeController,
-		deleteGyroscopeController,
-		getAverageGyroscopeController,
-		getLatestGyroscopeMeasurementController,
-	)
-
-	routes_u.RegisterClientRoutes(
-		router,
-		createUserController,
-		viewUserController,
-		editUserController,
-		deleteUserController,
-		viewByIdUserController,
-		loginController,
-	)
-
-	go func() {
-		if err := startServer(router); err != nil {
-			log.Fatalf("Error al iniciar el servidor: %v", err)
-		}
-	}()
-
-	select {}
+func main() {
+	startServer()
 }
