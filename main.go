@@ -21,7 +21,15 @@ func startServer() {
 	for {
 		log.Println("Iniciando servidor...")
 		router := gin.Default()
-		router.Use(cors.Default())
+
+		config := cors.DefaultConfig()
+		config.AllowAllOrigins = true
+		config.AllowMethods = []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"}
+		config.AllowHeaders = []string{"Authorization", "Content-Type"}
+		config.ExposeHeaders = []string{"Content-Length", "Authorization"}
+		config.MaxAge = 12 * time.Hour
+
+		router.Use(cors.New(config))
 
 		if err := initializeDependencies(router); err != nil {
 			log.Fatalf("Error al inicializar dependencias: %v", err)
