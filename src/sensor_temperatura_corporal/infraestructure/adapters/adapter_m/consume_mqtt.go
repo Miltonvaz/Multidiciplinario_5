@@ -77,7 +77,6 @@ func (adapter *MQTTAdapter) ConnectAndConsume() (*mqtt.Client, error) {
 		SetPassword(password).
 		SetDefaultPublishHandler(adapter.HandleMessageAdapter)
 
-	// Crear el cliente MQTT
 	client := mqtt.NewClient(opts)
 
 	// Intentar la conexión con el broker MQTT
@@ -99,23 +98,18 @@ func (adapter *MQTTAdapter) ConnectAndConsume() (*mqtt.Client, error) {
 	return &client, nil
 }
 
-// Manejo de mensajes MQTT recibidos
 func (adapter *MQTTAdapter) HandleMessageAdapter(client mqtt.Client, msg mqtt.Message) {
 	log.Printf("Message received on topic %s: %s\n", msg.Topic(), string(msg.Payload()))
 	adapter.HandleMessage(msg)
 }
 
-// Manejo de mensaje deserializado y guardado en base de datos
 func (adapter *MQTTAdapter) HandleMessage(msg mqtt.Message) {
 	var sensor entities.BodyTemperature
 
-	// Intentar deserializar el mensaje recibido
 	if err := json.Unmarshal(msg.Payload(), &sensor); err != nil {
 		log.Printf("Error unmarshalling data: %v\n", err)
 		return
 	}
-
-	// Guardar los datos de temperatura
 	createdSensor, err := adapter.UseCase.Execute(sensor)
 	if err != nil {
 		log.Printf("Error saving data: %v\n", err)

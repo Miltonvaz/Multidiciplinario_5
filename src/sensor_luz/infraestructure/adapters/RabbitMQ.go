@@ -19,7 +19,6 @@ type RabbitMQAdapter struct {
 
 var _ repositories.NotificationPort = (*RabbitMQAdapter)(nil)
 
-// NewRabbitMQAdapter initializes a new RabbitMQ connection and channel, and declares a queue
 func NewRabbitMQAdapter() (*RabbitMQAdapter, error) {
 	if err := loadEnv(); err != nil {
 		return nil, err

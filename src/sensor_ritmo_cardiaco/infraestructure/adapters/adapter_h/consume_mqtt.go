@@ -33,7 +33,6 @@ func NewMQTTAdapter(db domain.IHeartRate, serviceNotification *repositories.Serv
 	return adapter, nil
 }
 
-// loadEnvVariables loads environment variables from .env file
 func loadEnvVariables() error {
 	if err := godotenv.Load(); err != nil {
 		return fmt.Errorf("Error loading .env file: %v", err)
@@ -53,7 +52,6 @@ func (adapter *MQTTAdapter) ConnectAndConsume() (*mqtt.Client, error) {
 	password := os.Getenv("MQTT_PASSWORD")
 	topic := "esp32.bpm"
 
-	// Validate necessary environment variables
 	if brokerURL == "" || clientID == "" || username == "" || password == "" || topic == "" {
 		return nil, fmt.Errorf("Missing environment variables for MQTT connection")
 	}
@@ -67,7 +65,6 @@ func (adapter *MQTTAdapter) ConnectAndConsume() (*mqtt.Client, error) {
 
 	client := mqtt.NewClient(opts)
 
-	// Connect to the MQTT broker
 	if token := client.Connect(); token.Wait() && token.Error() != nil {
 		return nil, fmt.Errorf("Error connecting to MQTT broker: %v", token.Error())
 	}
@@ -81,23 +78,18 @@ func (adapter *MQTTAdapter) ConnectAndConsume() (*mqtt.Client, error) {
 	return &client, nil
 }
 
-// HandleMessageAdapter is the default handler for incoming messages
 func (adapter *MQTTAdapter) HandleMessageAdapter(client mqtt.Client, msg mqtt.Message) {
 	log.Printf("Message received on topic %s: %s\n", msg.Topic(), string(msg.Payload()))
 	adapter.HandleMessage(msg)
 }
 
-// HandleMessage processes the received message and handles the heart rate data
 func (adapter *MQTTAdapter) HandleMessage(msg mqtt.Message) {
 	var sensor entities.HeartRate
 
-	// Unmarshal the received message payload into HeartRate entity
 	if err := json.Unmarshal(msg.Payload(), &sensor); err != nil {
 		log.Printf("Error unmarshalling data: %v\n", err)
 		return
 	}
-
-	// Execute use case to process the heart rate data
 	createdSensor, err := adapter.UseCase.Execute(sensor)
 	if err != nil {
 		log.Printf("Error saving data: %v\n", err)

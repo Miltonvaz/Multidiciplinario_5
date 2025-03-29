@@ -26,7 +26,6 @@ func NewRabbitMQAdapter() (*RabbitMQAdapter, error) {
 
 	rabbitURL := os.Getenv("RABBITMQ_URL")
 	if rabbitURL == "" {
-		return nil, fmt.Errorf("RABBITMQ_URL no está definida en el archivo .env")
 	}
 
 	conn, err := amqp.Dial(rabbitURL)
@@ -75,7 +74,6 @@ func enableConfirmations(ch *amqp.Channel) error {
 	return nil
 }
 
-// PublishEvent publishes a HeartRate event to RabbitMQ
 func (r *RabbitMQAdapter) PublishEvent(eventType string, data entities.HeartRate) error {
 	body, err := json.Marshal(data)
 	if err != nil {

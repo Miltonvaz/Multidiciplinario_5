@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"Multidiciplinario/src/sensor_luz/application/use_case"
+
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"strconv"

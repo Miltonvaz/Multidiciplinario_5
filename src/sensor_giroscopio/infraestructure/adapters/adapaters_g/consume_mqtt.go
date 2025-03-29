@@ -19,7 +19,6 @@ type MQTTAdapter struct {
 	client  mqtt.Client
 }
 
-// NewMQTTAdapter initializes the MQTT adapter and connects to the broker
 func NewMQTTAdapter(db domain.IGyroscopeSensor, serviceNotification *repositories.ServiceNotification) (*MQTTAdapter, error) {
 	useCase := use_case.NewCreate_GyroscopeSensor(db, serviceNotification)
 	adapter := &MQTTAdapter{UseCase: useCase}
@@ -33,7 +32,6 @@ func NewMQTTAdapter(db domain.IGyroscopeSensor, serviceNotification *repositorie
 	return adapter, nil
 }
 
-// loadEnvVariables loads the environment variables from the .env file
 func loadEnvVariables() error {
 	if err := godotenv.Load(); err != nil {
 		return fmt.Errorf("Error loading .env file: %v", err)
