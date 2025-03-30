@@ -1,6 +1,7 @@
 package main
 
 import (
+	"Multidiciplinario/src/core"
 	"Multidiciplinario/src/sensor_giroscopio/infraestructure/dependencies_g"
 	"Multidiciplinario/src/sensor_giroscopio/infraestructure/routes_g"
 	"Multidiciplinario/src/sensor_luz/infraestructure/dependencies_l"
@@ -46,31 +47,35 @@ func startServer() {
 }
 
 func initializeDependencies(router *gin.Engine) error {
-	createTemperatureController, getTemperatureByIDController, getAllTemperatureController, deleteTemperatureController, getAverageTemperatureController, getLatestTemperatureMeasurementController, _, _, temperatureErr := dependencies_t.Init()
+
+	pool := core.GetDBPool()
+
+	createTemperatureController, getTemperatureByIDController, getAllTemperatureController, deleteTemperatureController, getAverageTemperatureController, getLatestTemperatureMeasurementController, _, _, temperatureErr := dependencies_t.Init(pool)
 	if temperatureErr != nil {
 		return temperatureErr
 	}
 
-	createHeartRateController, getHeartRateByIDController, getAllHeartRateController, deleteHeartRateController, getAverageHeartRateController, getLatestHeartRateMeasurementController, _, _, heartRateErr := dependencies_h.Init()
+	createHeartRateController, getHeartRateByIDController, getAllHeartRateController, deleteHeartRateController, getAverageHeartRateController, getLatestHeartRateMeasurementController, _, _, heartRateErr := dependencies_h.Init(pool)
 	if heartRateErr != nil {
 		return heartRateErr
 	}
 
-	createLightController, getLightByIDController, getAllLightController, deleteLightController, getAverageLightController, getLatestLightMeasurementController, _, _, _, lightErr := dependencies_l.Init()
+	createLightController, getLightByIDController, getAllLightController, deleteLightController, getAverageLightController, getLatestLightMeasurementController, _, _, _, lightErr := dependencies_l.Init(pool)
 	if lightErr != nil {
 		return lightErr
 	}
 
-	createGyroscopeController, getGyroscopeByIDController, getAllGyroscopeController, deleteGyroscopeController, getAverageGyroscopeController, getLatestGyroscopeMeasurementController, _, _, _, gyroscopeErr := dependencies_g.Init()
+	createGyroscopeController, getGyroscopeByIDController, getAllGyroscopeController, deleteGyroscopeController, getAverageGyroscopeController, getLatestGyroscopeMeasurementController, _, _, _, gyroscopeErr := dependencies_g.Init(pool)
 	if gyroscopeErr != nil {
 		return gyroscopeErr
 	}
 
-	createUserController, viewUserController, editUserController, deleteUserController, viewByIdUserController, loginController, userErr := dependencies_u.Init()
+	createUserController, viewUserController, editUserController, deleteUserController, viewByIdUserController, loginController, userErr := dependencies_u.Init(pool)
 	if userErr != nil {
 		return userErr
 	}
 
+	// Register routes
 	routes_t.RegisterRoutes(router, createTemperatureController, getTemperatureByIDController, getAllTemperatureController, deleteTemperatureController, getAverageTemperatureController, getLatestTemperatureMeasurementController)
 	routes_h.RegisterHeartRateRoutes(router, createHeartRateController, getHeartRateByIDController, getAllHeartRateController, deleteHeartRateController, getAverageHeartRateController, getLatestHeartRateMeasurementController)
 	routes_l.RegisterLightSensorRoutes(router, createLightController, getLightByIDController, getAllLightController, deleteLightController, getAverageLightController, getLatestLightMeasurementController)

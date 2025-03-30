@@ -19,7 +19,6 @@ type RabbitMQAdapter struct {
 
 var _ repositories.NotificationPort = (*RabbitMQAdapter)(nil)
 
-// NewRabbitMQAdapter initializes a new RabbitMQ connection and channel.
 func NewRabbitMQAdapter() (*RabbitMQAdapter, error) {
 	if err := godotenv.Load(); err != nil {
 		log.Println("Error loading .env file:", err)
@@ -51,15 +50,14 @@ func NewRabbitMQAdapter() (*RabbitMQAdapter, error) {
 	return &RabbitMQAdapter{conn: conn, ch: ch}, nil
 }
 
-// declareQueue ensures the "sesnsor.temperatura" queue exists.
 func declareQueue(ch *amqp.Channel) error {
 	_, err := ch.QueueDeclare(
 		"sesnsor.temperatura",
-		true,  // Durable queue
-		false, // Auto-delete queue
-		false, // Exclusive
-		false, // No-wait
-		nil,   // Arguments
+		true,
+		false,
+		false,
+		false,
+		nil,
 	)
 	if err != nil {
 		return fmt.Errorf("failed to declare queue: %w", err)
@@ -67,7 +65,6 @@ func declareQueue(ch *amqp.Channel) error {
 	return nil
 }
 
-// PublishEvent sends a BodyTemperature event to the RabbitMQ queue.
 func (r *RabbitMQAdapter) PublishEvent(eventType string, data entities.BodyTemperature) error {
 	body, err := json.Marshal(data)
 	if err != nil {
@@ -79,8 +76,8 @@ func (r *RabbitMQAdapter) PublishEvent(eventType string, data entities.BodyTempe
 	err = r.ch.Publish(
 		"",
 		"sesnsor.temperatura",
-		true,  // Persistent delivery mode
-		false, // No immediate delivery
+		true,
+		false,
 		amqp.Publishing{
 			ContentType: "application/json",
 			Body:        body,
@@ -96,7 +93,6 @@ func (r *RabbitMQAdapter) PublishEvent(eventType string, data entities.BodyTempe
 	return nil
 }
 
-// handlePublishConfirmation processes the message confirmation asynchronously.
 func handlePublishConfirmation(ack, nack <-chan uint64) {
 	select {
 	case <-ack:
@@ -106,7 +102,6 @@ func handlePublishConfirmation(ack, nack <-chan uint64) {
 	}
 }
 
-// Close gracefully shuts down the RabbitMQ connection and channel.
 func (r *RabbitMQAdapter) Close() {
 	if err := r.ch.Close(); err != nil {
 		log.Printf("Failed to close RabbitMQ channel: %v", err)

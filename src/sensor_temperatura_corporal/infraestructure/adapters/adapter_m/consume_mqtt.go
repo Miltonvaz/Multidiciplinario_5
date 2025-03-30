@@ -26,7 +26,6 @@ var (
 	topic     string
 )
 
-// Cargar variables de entorno solo una vez
 func loadEnvVariables() error {
 	if err := godotenv.Load(); err != nil {
 		return fmt.Errorf("Error loading .env file: %v", err)
@@ -38,7 +37,6 @@ func loadEnvVariables() error {
 	password = os.Getenv("MQTT_PASSWORD")
 	topic = os.Getenv("MQTT_TOPIC")
 
-	// Verificar que todas las variables necesarias estén configuradas
 	if brokerURL == "" || clientID == "" || username == "" || password == "" || topic == "" {
 		return fmt.Errorf("Missing environment variables for MQTT connection")
 	}
@@ -51,7 +49,6 @@ func NewMQTTAdapter(db domain.IBodyTemperature, serviceNotification *repositorie
 
 	adapter := &MQTTAdapter{UseCase: useCase}
 
-	// Intentar la conexión con el broker MQTT
 	client, err := adapter.ConnectAndConsume()
 	if err != nil {
 		return nil, err
@@ -61,15 +58,12 @@ func NewMQTTAdapter(db domain.IBodyTemperature, serviceNotification *repositorie
 	return adapter, nil
 }
 
-// Conectar y consumir mensajes
 func (adapter *MQTTAdapter) ConnectAndConsume() (*mqtt.Client, error) {
-	// Cargar las variables de entorno solo una vez
 	if err := loadEnvVariables(); err != nil {
 		log.Printf("Error loading environment variables: %v\n", err)
 		return nil, err
 	}
 
-	// Configurar opciones de cliente MQTT
 	opts := mqtt.NewClientOptions().
 		AddBroker(brokerURL).
 		SetClientID(clientID).
@@ -79,7 +73,6 @@ func (adapter *MQTTAdapter) ConnectAndConsume() (*mqtt.Client, error) {
 
 	client := mqtt.NewClient(opts)
 
-	// Intentar la conexión con el broker MQTT
 	log.Printf("Attempting to connect to MQTT broker at %s\n", brokerURL)
 	if token := client.Connect(); token.Wait() && token.Error() != nil {
 		log.Printf("Failed to connect to MQTT broker: %v\n", token.Error())
@@ -88,7 +81,6 @@ func (adapter *MQTTAdapter) ConnectAndConsume() (*mqtt.Client, error) {
 
 	log.Printf("Connected to MQTT broker successfully!\n")
 
-	// Intentar suscribirse al topic
 	if token := client.Subscribe(topic, 0, adapter.HandleMessageAdapter); token.Wait() && token.Error() != nil {
 		log.Printf("Failed to subscribe to topic %s: %v\n", topic, token.Error())
 		return nil, fmt.Errorf("Error subscribing to topic: %v", token.Error())

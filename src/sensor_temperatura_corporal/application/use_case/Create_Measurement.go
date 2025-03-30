@@ -20,14 +20,11 @@ func NewCreate_BodyTemperature(appointmentRepo domain.IBodyTemperature, serviceN
 }
 
 func (c *Create_BodyTemperature) Execute(appointment entities.BodyTemperature) (entities.BodyTemperature, error) {
-	// Guardamos los datos en la base de datos
 	created, err := c.appointmentRepo.Save(appointment)
 	if err != nil {
 		log.Printf("Error saving data: %v", err)
 		return entities.BodyTemperature{}, err
 	}
-
-	// Enviamos notificación
 	err = c.serviceNotification.NotifyAppointmentCreated(created)
 	if err != nil {
 		log.Printf("Error notifying about created appointment: %v", err)

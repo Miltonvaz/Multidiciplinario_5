@@ -64,12 +64,10 @@ func (adapter *MQTTAdapter) ConnectAndConsume() (*mqtt.Client, error) {
 	return &client, nil
 }
 
-// getMQTTConfig retrieves the required environment variables
 func getMQTTConfig() (string, string, string, string, string) {
 	return os.Getenv("MQTT_BROKER_URL"), "GoSubscriber2", os.Getenv("MQTT_USERNAME"), os.Getenv("MQTT_PASSWORD"), "esp32.luz"
 }
 
-// connectClient connects the MQTT client to the broker
 func (adapter *MQTTAdapter) connectClient(brokerURL, clientID, username, password string) (mqtt.Client, error) {
 	opts := mqtt.NewClientOptions().
 		AddBroker(brokerURL).
@@ -86,7 +84,6 @@ func (adapter *MQTTAdapter) connectClient(brokerURL, clientID, username, passwor
 	return client, nil
 }
 
-// subscribeToTopic subscribes the client to the given MQTT topic
 func (adapter *MQTTAdapter) subscribeToTopic(client mqtt.Client, topic string) error {
 	token := client.Subscribe(topic, 0, adapter.HandleMessageAdapter)
 	if token.Wait() && token.Error() != nil {

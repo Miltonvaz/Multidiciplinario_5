@@ -18,13 +18,10 @@ func NewCreate_TemperatureAndHumidity_C(useCase *use_case.Create_BodyTemperature
 func (c *Create_BodyTemperature_C) Execute(ctx *gin.Context) {
 	var sensor entities.BodyTemperature
 
-	// Deserialize the received JSON data
 	if err := ctx.ShouldBindJSON(&sensor); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid data"})
 		return
 	}
-
-	// Execute use case to save the data
 	createdSensor, err := c.UseCase.Execute(sensor)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Error saving data"})
