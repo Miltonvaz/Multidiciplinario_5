@@ -7,7 +7,7 @@ import (
 	"Multidiciplinario/src/users/infraestructure/controllers"
 )
 
-func Init() (
+func Init(pool *core.Conn_MySQL) (
 	*controllers.CreateUserController,
 	*controllers.ViewUserController,
 	*controllers.EditUserController,
@@ -17,7 +17,6 @@ func Init() (
 	error,
 ) {
 
-	pool := core.GetDBPool()
 	ps := db.NewMySQL(pool.DB)
 
 	createClient := application.NewCreateUser(ps)

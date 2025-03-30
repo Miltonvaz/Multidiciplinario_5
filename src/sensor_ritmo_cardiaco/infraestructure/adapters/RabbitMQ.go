@@ -49,23 +49,20 @@ func NewRabbitMQAdapter() (*RabbitMQAdapter, error) {
 	return &RabbitMQAdapter{conn: conn, ch: ch}, nil
 }
 
-// declareQueue encapsulates the logic to declare the RabbitMQ queue
 func declareQueue(ch *amqp.Channel) error {
 	_, err := ch.QueueDeclare(
-		"sensor.ritmo_cardiaco", // queue name
-		true,                    // durable
-		false,                   // delete when unused
-		false,                   // exclusive
-		false,                   // no-wait
-		nil,                     // arguments
+		"sensor.ritmo_cardiaco",
+		true,
+		false,
+		false,
+		false,
+		nil,
 	)
 	if err != nil {
 		log.Printf("Error declarando la cola: %v", err)
 	}
 	return err
 }
-
-// enableConfirmations enables message confirmations on the channel
 func enableConfirmations(ch *amqp.Channel) error {
 	if err := ch.Confirm(false); err != nil {
 		log.Printf("Error habilitando confirmaciones de mensaje: %v", err)
@@ -110,7 +107,6 @@ func (r *RabbitMQAdapter) PublishEvent(eventType string, data entities.HeartRate
 	return nil
 }
 
-// Close closes the RabbitMQ connection and channel
 func (r *RabbitMQAdapter) Close() {
 	if err := r.ch.Close(); err != nil {
 		log.Printf("Error cerrando canal RabbitMQ: %v", err)

@@ -10,7 +10,7 @@ import (
 	"log"
 )
 
-func Init() (
+func Init(pool *core.Conn_MySQL) (
 	*controllers.Create_HeartRate_C,
 	*controllers.GetHeartRateByIDController,
 	*controllers.GetAllHeartRateController,
@@ -22,7 +22,6 @@ func Init() (
 	error,
 ) {
 
-	pool := core.GetDBPool()
 	repository := adapters.NewMySQL(pool.DB)
 
 	rabbitMQAdapter, err := adapters.NewRabbitMQAdapter()

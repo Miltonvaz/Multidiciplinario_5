@@ -40,7 +40,6 @@ func loadEnvVariables() error {
 	return nil
 }
 
-// ConnectAndConsume connects to the MQTT broker and subscribes to the topic
 func (adapter *MQTTAdapter) ConnectAndConsume() (*mqtt.Client, error) {
 	if err := loadEnvVariables(); err != nil {
 		return nil, err
@@ -69,7 +68,6 @@ func (adapter *MQTTAdapter) ConnectAndConsume() (*mqtt.Client, error) {
 		return nil, fmt.Errorf("Error connecting to MQTT broker: %v", token.Error())
 	}
 
-	// Subscribe to the topic
 	if token := client.Subscribe(topic, 0, adapter.HandleMessageAdapter); token.Wait() && token.Error() != nil {
 		return nil, fmt.Errorf("Error subscribing to topic: %v", token.Error())
 	}

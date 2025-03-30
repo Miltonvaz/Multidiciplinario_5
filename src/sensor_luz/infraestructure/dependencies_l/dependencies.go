@@ -11,7 +11,7 @@ import (
 	"log"
 )
 
-func Init() (
+func Init(pool *core.Conn_MySQL) (
 	*controllers.Create_LightLDR_C,
 	*controllers.GetLightLDRByIDController,
 	*controllers.GetAllLightLDRController,
@@ -23,8 +23,6 @@ func Init() (
 	*adapters_l.MQTTAdapter,
 	error,
 ) {
-
-	pool := core.GetDBPool()
 	repository := adapters.NewMySQL(pool.DB)
 
 	rabbitMQAdapter, err := adapters.NewRabbitMQAdapter()

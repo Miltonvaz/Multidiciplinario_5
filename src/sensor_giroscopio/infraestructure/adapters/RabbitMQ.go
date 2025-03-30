@@ -19,7 +19,6 @@ type RabbitMQAdapter struct {
 
 var _ repositories.NotificationPort = (*RabbitMQAdapter)(nil)
 
-// NewRabbitMQAdapter initializes a new RabbitMQ connection and channel, and declares a queue
 func NewRabbitMQAdapter() (*RabbitMQAdapter, error) {
 	if err := loadEnv(); err != nil {
 		return nil, err
@@ -51,7 +50,6 @@ func NewRabbitMQAdapter() (*RabbitMQAdapter, error) {
 	return &RabbitMQAdapter{conn: conn, ch: ch}, nil
 }
 
-// loadEnv loads the environment variables from the .env file
 func loadEnv() error {
 	if err := godotenv.Load(); err != nil {
 		log.Println("Failed to load .env file, ensure it exists")
@@ -60,7 +58,6 @@ func loadEnv() error {
 	return nil
 }
 
-// connectToRabbitMQ establishes a connection to RabbitMQ
 func connectToRabbitMQ(rabbitURL string) (*amqp.Connection, error) {
 	conn, err := amqp.Dial(rabbitURL)
 	if err != nil {
@@ -69,8 +66,6 @@ func connectToRabbitMQ(rabbitURL string) (*amqp.Connection, error) {
 	}
 	return conn, nil
 }
-
-// createChannel creates a new RabbitMQ channel
 func createChannel(conn *amqp.Connection) (*amqp.Channel, error) {
 	ch, err := conn.Channel()
 	if err != nil {
@@ -80,10 +75,9 @@ func createChannel(conn *amqp.Connection) (*amqp.Channel, error) {
 	return ch, nil
 }
 
-// declareQueue declares the queue for message delivery
 func declareQueue(ch *amqp.Channel) error {
 	_, err := ch.QueueDeclare(
-		"sensor.giroscopio", // Renamed queue for gyroscope sensor
+		"sensor.giroscopio",
 		true,
 		false,
 		false,
@@ -97,7 +91,6 @@ func declareQueue(ch *amqp.Channel) error {
 	return nil
 }
 
-// enableConfirmations enables message confirmations for the channel
 func enableConfirmations(ch *amqp.Channel) error {
 	if err := ch.Confirm(false); err != nil {
 		log.Printf("Error enabling message confirmations: %v", err)
@@ -106,7 +99,6 @@ func enableConfirmations(ch *amqp.Channel) error {
 	return nil
 }
 
-// PublishEvent publishes an event message to RabbitMQ
 func (r *RabbitMQAdapter) PublishEvent(eventType string, data entities.GyroscopeSensor) error {
 	body, err := json.Marshal(data)
 	if err != nil {
@@ -118,7 +110,7 @@ func (r *RabbitMQAdapter) PublishEvent(eventType string, data entities.Gyroscope
 
 	if err := r.ch.Publish(
 		"",
-		"sensor.giroscopio", // Renamed queue for gyroscope sensor
+		"sensor.giroscopio",
 		true,
 		false,
 		amqp.Publishing{
