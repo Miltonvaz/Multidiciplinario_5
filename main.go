@@ -75,7 +75,6 @@ func initializeDependencies(router *gin.Engine) error {
 		return userErr
 	}
 
-	// Register routes
 	routes_t.RegisterRoutes(router, createTemperatureController, getTemperatureByIDController, getAllTemperatureController, deleteTemperatureController, getAverageTemperatureController, getLatestTemperatureMeasurementController)
 	routes_h.RegisterHeartRateRoutes(router, createHeartRateController, getHeartRateByIDController, getAllHeartRateController, deleteHeartRateController, getAverageHeartRateController, getLatestHeartRateMeasurementController)
 	routes_l.RegisterLightSensorRoutes(router, createLightController, getLightByIDController, getAllLightController, deleteLightController, getAverageLightController, getLatestLightMeasurementController)

@@ -8,5 +8,6 @@ type IUser interface {
 	GetById(id int) (entities.User, error)
 	GetByEmail(email string) (entities.User, error)
 	Edit(entities.User) error
+	GetByEsp32Serial(serial string) (*entities.User, error)
 	Delete(id int) error
 }
