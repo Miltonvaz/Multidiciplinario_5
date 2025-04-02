@@ -28,6 +28,7 @@ func (cc_c *CreateUserController) Execute(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
+
 	input.Password = ""
 
 	c.JSON(http.StatusCreated, gin.H{"Client": input})

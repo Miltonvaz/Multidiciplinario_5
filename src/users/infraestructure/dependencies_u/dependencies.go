@@ -3,8 +3,10 @@ package dependencies_u
 import (
 	"Multidiciplinario/src/core"
 	"Multidiciplinario/src/users/application"
-	db "Multidiciplinario/src/users/infraestructure/adapters"
+	"Multidiciplinario/src/users/application/repositories"
+	"Multidiciplinario/src/users/infraestructure/adapters"
 	"Multidiciplinario/src/users/infraestructure/controllers"
+	"log"
 )
 
 func Init(pool *core.Conn_MySQL) (
@@ -17,9 +19,16 @@ func Init(pool *core.Conn_MySQL) (
 	error,
 ) {
 
-	ps := db.NewMySQL(pool.DB)
+	ps := adapters.NewMySQL(pool.DB)
 
-	createClient := application.NewCreateUser(ps)
+	rabbitMQAdapter, err := adapters.NewRabbitMQAdapter()
+	if err != nil {
+		log.Printf("Error initializing RabbitMQ: %v", err)
+	}
+
+	serviceNotification := repositories.NewServiceNotification(rabbitMQAdapter)
+
+	createClient := application.NewCreateUser(ps, serviceNotification)
 	viewClient := application.NewListUser(ps)
 	editClient := application.NewEditUser(ps)
 	deleteClient := application.NewDeleteUser(ps)
