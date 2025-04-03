@@ -22,7 +22,7 @@ func NewCreateUser(db domain.IUser, serviceNotification *repositories.ServiceNot
 }
 
 func (cc *CreateUser) Execute(client entities.User) error {
-	existingUser, err := cc.db.GetByEsp32Serial(client.Id_esp32)
+	existingUser, err := cc.db.GetByEsp32Serial(*client.Id_esp32)
 	if err != nil {
 		return err
 	}

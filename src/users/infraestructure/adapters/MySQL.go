@@ -17,7 +17,7 @@ func NewMySQL(conn *sql.DB) *MySQL {
 
 func (m *MySQL) Save(user entities.User) error {
 	// Verificar si el número de serie ya está registrado en esp32_devices
-	existingDevice, err := m.GetByEsp32Serial(user.Id_esp32)
+	existingDevice, err := m.GetByEsp32Serial(*user.Id_esp32)
 	if err != nil && err.Error() != "device not found" {
 		return fmt.Errorf("error checking ESP32 serial: %v", err)
 	}
@@ -26,7 +26,7 @@ func (m *MySQL) Save(user entities.User) error {
 	}
 
 	// Insertar el número de serie en la tabla esp32_devices si no existe
-	err = m.InsertEsp32Serial(user.Id_esp32)
+	err = m.InsertEsp32Serial(*user.Id_esp32)
 	if err != nil {
 		return fmt.Errorf("error inserting ESP32 serial into the devices table: %v", err)
 	}
@@ -55,17 +55,20 @@ func (m *MySQL) InsertEsp32Serial(serial string) error {
 func (m *MySQL) GetByEmail(email string) (entities.User, error) {
 	var user entities.User
 	query := `SELECT id, name, last_name, email, backup_email, age, password, esp32_serial FROM users WHERE email = ? LIMIT 1`
+	fmt.Println("Executing query:", query, "with email:", email)
+
 	err := m.conn.QueryRow(query, email).Scan(
 		&user.ID, &user.Name, &user.LastName, &user.Email, &user.BackupEmail, &user.Age, &user.Password, &user.Id_esp32,
 	)
 
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
+			fmt.Println("No user found for email:", email)
 			return entities.User{}, errors.New("user not found")
 		}
+		fmt.Println("Error executing query:", err)
 		return entities.User{}, err
 	}
-
 	return user, nil
 }
 
